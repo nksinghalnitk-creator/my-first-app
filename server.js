@@ -5,6 +5,7 @@ const sqlite3 = require("sqlite3").verbose();
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.static(__dirname));
 
 const db = new sqlite3.Database("./tasks.db");
 
