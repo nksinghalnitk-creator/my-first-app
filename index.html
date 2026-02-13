@@ -1,329 +1,75 @@
 <!doctype html>
-<html lang="en">
+<html>
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EMI Calculator</title>
+    <title>Task App (Frontend + Backend)</title>
     <style>
-      :root {
-        --bg: #f4f7fb;
-        --card: #ffffff;
-        --text: #1a2533;
-        --muted: #5d6b7a;
-        --border: #d8e0ea;
-        --accent: #0a66c2;
-        --accent-strong: #084f97;
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      body {
-        margin: 0;
-        padding: 24px;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        color: var(--text);
-        background: radial-gradient(circle at 20% 0%, #ffffff 0%, var(--bg) 60%);
-      }
-
-      .container {
-        max-width: 980px;
-        margin: 0 auto;
-      }
-
-      .card {
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 8px 20px rgba(10, 35, 66, 0.06);
-      }
-
-      h1 {
-        margin-top: 0;
-        margin-bottom: 12px;
-        font-size: 28px;
-      }
-
-      p.subtitle {
-        margin-top: 0;
-        color: var(--muted);
-      }
-
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 12px;
-      }
-
-      label {
-        font-weight: 600;
-        display: block;
-        margin-bottom: 6px;
-      }
-
-      input {
-        width: 100%;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 10px;
-        font-size: 15px;
-      }
-
-      button {
-        margin-top: 14px;
-        border: none;
-        border-radius: 8px;
-        padding: 11px 16px;
-        font-size: 15px;
-        color: #fff;
-        background: var(--accent);
-        cursor: pointer;
-      }
-
-      button:hover {
-        background: var(--accent-strong);
-      }
-
-      .summary {
-        margin-top: 18px;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 10px;
-      }
-
-      .summary-item {
-        background: #f8fbff;
-        border: 1px solid #d9e7f8;
-        border-radius: 10px;
-        padding: 12px;
-      }
-
-      .summary-item .k {
-        color: var(--muted);
-        font-size: 13px;
-      }
-
-      .summary-item .v {
-        margin-top: 4px;
-        font-size: 20px;
-        font-weight: 700;
-      }
-
-      .table-wrap {
-        margin-top: 16px;
-        overflow-x: auto;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        min-width: 760px;
-      }
-
-      th,
-      td {
-        border-bottom: 1px solid var(--border);
-        padding: 9px;
-        text-align: right;
-        font-size: 14px;
-      }
-
-      th:first-child,
-      td:first-child {
-        text-align: center;
-      }
-
-      th {
-        background: #f4f8ff;
-        position: sticky;
-        top: 0;
-      }
-
-      .error {
-        margin-top: 10px;
-        color: #b42318;
-        font-size: 14px;
-      }
+      body { font-family: Arial, sans-serif; margin: 40px; max-width: 600px; }
+      .row { display: flex; gap: 8px; }
+      input { flex: 1; padding: 10px; font-size: 16px; }
+      button { padding: 10px 14px; font-size: 15px; cursor: pointer; }
+      ul { margin-top: 20px; padding-left: 0; list-style: none; }
+      li { display: flex; justify-content: space-between; align-items: center; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 8px; }
+      .delete-btn { background: #e74c3c; color: white; border: none; border-radius: 6px; }
     </style>
   </head>
   <body>
-    <div class="container">
-      <div class="card">
-        <h1>EMI Calculator</h1>
-        <p class="subtitle">
-          Enter loan details to calculate monthly EMI and view month-wise interest payment.
-        </p>
-
-        <div class="grid">
-          <div>
-            <label for="principal">Principal Amount</label>
-            <input id="principal" type="number" min="0" step="0.01" placeholder="e.g. 500000" />
-          </div>
-          <div>
-            <label for="rate">Annual Interest Rate (%)</label>
-            <input id="rate" type="number" min="0" step="0.01" placeholder="e.g. 8.5" />
-          </div>
-          <div>
-            <label for="months">Repayment Months</label>
-            <input id="months" type="number" min="1" step="1" placeholder="e.g. 60" />
-          </div>
-        </div>
-
-        <button id="calculateBtn">Calculate</button>
-        <div id="error" class="error"></div>
-
-        <div id="summary" class="summary" style="display: none"></div>
-
-        <div class="table-wrap" id="tableWrap" style="display: none">
-          <table>
-            <thead>
-              <tr>
-                <th>Month</th>
-                <th>Opening Balance</th>
-                <th>EMI</th>
-                <th>Interest</th>
-                <th>Principal</th>
-                <th>Closing Balance</th>
-              </tr>
-            </thead>
-            <tbody id="scheduleBody"></tbody>
-          </table>
-        </div>
-      </div>
+    <h1>My Tasks (API)</h1>
+    <div class="row">
+      <input id="taskInput" type="text" placeholder="Enter a task..." />
+      <button onclick="addTask()">Add</button>
     </div>
+    <ul id="taskList"></ul>
 
     <script>
-      const principalInput = document.getElementById("principal");
-      const rateInput = document.getElementById("rate");
-      const monthsInput = document.getElementById("months");
-      const errorEl = document.getElementById("error");
-      const summaryEl = document.getElementById("summary");
-      const tableWrapEl = document.getElementById("tableWrap");
-      const scheduleBodyEl = document.getElementById("scheduleBody");
+      const API = "http://localhost:4000";
 
-      function formatMoney(value) {
-        return new Intl.NumberFormat("en-IN", {
-          style: "currency",
-          currency: "INR",
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }).format(value);
+      async function loadTasks() {
+        const res = await fetch(`${API}/tasks`);
+        const tasks = await res.json();
+
+        const list = document.getElementById("taskList");
+        list.innerHTML = "";
+
+        tasks.forEach((task) => {
+          const li = document.createElement("li");
+
+          const span = document.createElement("span");
+          span.innerText = task.text;
+
+          const del = document.createElement("button");
+          del.innerText = "Delete";
+          del.className = "delete-btn";
+          del.onclick = async () => {
+            await fetch(`${API}/tasks/${task.id}`, { method: "DELETE" });
+            loadTasks();
+          };
+
+          li.appendChild(span);
+          li.appendChild(del);
+          list.appendChild(li);
+        });
       }
 
-      function buildSchedule(principal, annualRate, months) {
-        const monthlyRate = annualRate / 12 / 100;
-        let emi;
+      async function addTask() {
+        const input = document.getElementById("taskInput");
+        const text = input.value.trim();
 
-        if (monthlyRate === 0) {
-          emi = principal / months;
-        } else {
-          const factor = Math.pow(1 + monthlyRate, months);
-          emi = (principal * monthlyRate * factor) / (factor - 1);
-        }
-
-        let balance = principal;
-        const rows = [];
-        let totalInterest = 0;
-
-        for (let month = 1; month <= months; month += 1) {
-          const openingBalance = balance;
-          const interest = openingBalance * monthlyRate;
-          let principalPaid = emi - interest;
-          let closingBalance = openingBalance - principalPaid;
-
-          if (month === months) {
-            principalPaid = openingBalance;
-            closingBalance = 0;
-          }
-
-          totalInterest += interest;
-          rows.push({
-            month,
-            openingBalance,
-            emi,
-            interest,
-            principalPaid,
-            closingBalance,
-          });
-
-          balance = closingBalance;
-        }
-
-        return {
-          emi,
-          totalInterest,
-          totalPayment: principal + totalInterest,
-          rows,
-        };
-      }
-
-      function renderSummary(result) {
-        summaryEl.style.display = "grid";
-        summaryEl.innerHTML = `
-          <div class="summary-item">
-            <div class="k">Monthly EMI</div>
-            <div class="v">${formatMoney(result.emi)}</div>
-          </div>
-          <div class="summary-item">
-            <div class="k">Total Interest</div>
-            <div class="v">${formatMoney(result.totalInterest)}</div>
-          </div>
-          <div class="summary-item">
-            <div class="k">Total Payment</div>
-            <div class="v">${formatMoney(result.totalPayment)}</div>
-          </div>
-        `;
-      }
-
-      function renderSchedule(rows) {
-        scheduleBodyEl.innerHTML = rows
-          .map(
-            (row) => `
-              <tr>
-                <td>${row.month}</td>
-                <td>${formatMoney(row.openingBalance)}</td>
-                <td>${formatMoney(row.emi)}</td>
-                <td>${formatMoney(row.interest)}</td>
-                <td>${formatMoney(row.principalPaid)}</td>
-                <td>${formatMoney(row.closingBalance)}</td>
-              </tr>
-            `
-          )
-          .join("");
-
-        tableWrapEl.style.display = "block";
-      }
-
-      function calculate() {
-        const principal = Number(principalInput.value);
-        const annualRate = Number(rateInput.value);
-        const months = Number(monthsInput.value);
-
-        if (!Number.isFinite(principal) || principal <= 0) {
-          errorEl.textContent = "Enter a valid principal amount greater than 0.";
+        if (!text) {
+          alert("Please type a task first.");
           return;
         }
 
-        if (!Number.isFinite(annualRate) || annualRate < 0) {
-          errorEl.textContent = "Enter a valid annual interest rate (0 or more).";
-          return;
-        }
+        await fetch(`${API}/tasks`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text })
+        });
 
-        if (!Number.isInteger(months) || months <= 0) {
-          errorEl.textContent = "Enter a valid number of months (whole number greater than 0).";
-          return;
-        }
-
-        errorEl.textContent = "";
-
-        const result = buildSchedule(principal, annualRate, months);
-        renderSummary(result);
-        renderSchedule(result.rows);
+        input.value = "";
+        loadTasks();
       }
 
-      document.getElementById("calculateBtn").addEventListener("click", calculate);
+      loadTasks();
     </script>
   </body>
 </html>
