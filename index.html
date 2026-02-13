@@ -1,86 +1,47 @@
 <!doctype html>
 <html>
   <head>
-    <title>Task App</title>
+    <title>Task App (Frontend + Backend)</title>
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 40px;
-        max-width: 600px;
-      }
-      h1 {
-        margin-bottom: 16px;
-      }
-      .row {
-        display: flex;
-        gap: 8px;
-      }
-      input {
-        flex: 1;
-        padding: 10px;
-        font-size: 16px;
-      }
-      button {
-        padding: 10px 14px;
-        font-size: 15px;
-        cursor: pointer;
-      }
-      ul {
-        margin-top: 20px;
-        padding-left: 0;
-        list-style: none;
-      }
-      li {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        margin-bottom: 8px;
-      }
-      .delete-btn {
-        background: #e74c3c;
-        color: white;
-        border: none;
-        border-radius: 6px;
-      }
+      body { font-family: Arial, sans-serif; margin: 40px; max-width: 600px; }
+      .row { display: flex; gap: 8px; }
+      input { flex: 1; padding: 10px; font-size: 16px; }
+      button { padding: 10px 14px; font-size: 15px; cursor: pointer; }
+      ul { margin-top: 20px; padding-left: 0; list-style: none; }
+      li { display: flex; justify-content: space-between; align-items: center; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 8px; }
+      .delete-btn { background: #e74c3c; color: white; border: none; border-radius: 6px; }
     </style>
   </head>
   <body>
-    <h1>My Tasks</h1>
-
+    <h1>My Tasks (API)</h1>
     <div class="row">
       <input id="taskInput" type="text" placeholder="Enter a task..." />
       <button onclick="addTask()">Add</button>
     </div>
-
     <ul id="taskList"></ul>
 
     <script>
-      let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+      const API = "http://localhost:4000";
 
-      function saveTasks() {
-        localStorage.setItem("tasks", JSON.stringify(tasks));
-      }
+      async function loadTasks() {
+        const res = await fetch(`${API}/tasks`);
+        const tasks = await res.json();
 
-      function renderTasks() {
         const list = document.getElementById("taskList");
         list.innerHTML = "";
 
-        tasks.forEach((task, index) => {
+        tasks.forEach((task) => {
           const li = document.createElement("li");
 
           const span = document.createElement("span");
-          span.innerText = task;
+          span.innerText = task.text;
 
           const del = document.createElement("button");
           del.innerText = "Delete";
           del.className = "delete-btn";
-          del.onclick = function () {
-            tasks.splice(index, 1);
-            saveTasks();
-            renderTasks();
+          del.onclick = async () => {
+            await fetch(`${API}/tasks/${task.id}`, { method: "DELETE" });
+            loadTasks();
           };
 
           li.appendChild(span);
@@ -89,22 +50,26 @@
         });
       }
 
-      function addTask() {
+      async function addTask() {
         const input = document.getElementById("taskInput");
         const text = input.value.trim();
 
-        if (text === "") {
+        if (!text) {
           alert("Please type a task first.");
           return;
         }
 
-        tasks.push(text);
-        saveTasks();
-        renderTasks();
+        await fetch(`${API}/tasks`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text })
+        });
+
         input.value = "";
+        loadTasks();
       }
 
-      renderTasks();
+      loadTasks();
     </script>
   </body>
 </html>
